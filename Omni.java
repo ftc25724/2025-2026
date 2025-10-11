@@ -13,8 +13,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import org.firstinspires.ftc.teamcode.Arm;
-
 
 @TeleOp(name="Robot: Omni", group="Robot")
 
@@ -26,7 +24,7 @@ public class Omni extends LinearOpMode {
     private DcMotor backL = null;
     private DcMotor frontR = null;
     private DcMotor backR = null;
-    
+    private DcMotor launch = null;
     @Override
     public void runOpMode() {
 
@@ -36,10 +34,9 @@ public class Omni extends LinearOpMode {
         backL  = hardwareMap.get(DcMotor.class, "blm");
         frontR = hardwareMap.get(DcMotor.class, "frm");
         backR = hardwareMap.get(DcMotor.class, "brm");
+        launch = hardwareMap.get(DcMotor.class, "launch");
         IMU imu = hardwareMap.get(IMU.class, "imu");
-        
-        int armposition = 0;
-        
+                
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -49,14 +46,12 @@ public class Omni extends LinearOpMode {
         backL.setDirection(DcMotor.Direction.REVERSE);
         frontR.setDirection(DcMotor.Direction.FORWARD);
         backR.setDirection(DcMotor.Direction.FORWARD);
+        launch.setDirection(DcMotor.Direction.REVERSE);
         
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
-        
-        Arm arm = new Arm();
-        arm.runOpMode();
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addData("Status", "Initialized");
@@ -83,7 +78,20 @@ public class Omni extends LinearOpMode {
             double rightBackPower = (axialy + lateralx - yaw) / denominator;
                 
             lateralx = lateralx * 1.1;
-                
+
+            if (gamepad1.options) {
+                imu.resetYaw();
+            }
+            
+            if (gamepad1.y) {
+                launch.setPower(0);
+            }
+
+            if (gamepad1.x) {
+                launch.setPower(0.85);
+            }
+
+
             // Send calculated power to wheels
             frontL.setPower(leftFrontPower);
             frontR.setPower(rightFrontPower);
