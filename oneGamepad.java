@@ -14,9 +14,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name="Robot: Omni", group="Robot")
+@TeleOp(name="Robot: oneGamepad", group="Robot")
 
-public class Omni extends LinearOpMode {
+public class oneGamepad extends LinearOpMode {
 
     // Declare OpMode members for each of the motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -90,25 +90,29 @@ public class Omni extends LinearOpMode {
                 imu.resetYaw();
             }
             
-            if (gamepad2.y) {
+            if (gamepad1.y) {
                 launch.setPower(0);
             }
 
-            if (gamepad2.x) {
+            if (gamepad1.x) {
                 launch.setPower(0.70);
             }
             
-            if (gamepad2.b) {
+            if (gamepad1.a && gamepad1.b) {
+                launch.setPower(-0.60);
+            }
+            
+            if (gamepad1.b) {
                 launch.setPower(0.60);
             }
             
-            if (gamepad2.dpad_up) {
+            if (gamepad1.dpad_up) {
                 DropIt.setPosition(0.20);
                 sleep(600);
                 DropIt.setPosition(0.00);
             }
 
-            if (gamepad2.dpad_down) {
+            if (gamepad1.dpad_down) {
                 SendIt.setPosition(0.20);
                 sleep(600);
                 SendIt.setPosition(0.00);

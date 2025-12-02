@@ -14,9 +14,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name="Robot: Omni", group="Robot")
+@TeleOp(name="Robot: Demo", group="Robot")
 
-public class Omni extends LinearOpMode {
+public class Demo extends LinearOpMode {
 
     // Declare OpMode members for each of the motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -24,9 +24,6 @@ public class Omni extends LinearOpMode {
     private DcMotor backL = null;
     private DcMotor frontR = null;
     private DcMotor backR = null;
-    private DcMotor launch = null;
-    private Servo DropIt = null;
-    private Servo SendIt = null;
     @Override
     public void runOpMode() {
 
@@ -36,28 +33,21 @@ public class Omni extends LinearOpMode {
         backL  = hardwareMap.get(DcMotor.class, "blm");
         frontR = hardwareMap.get(DcMotor.class, "frm");
         backR = hardwareMap.get(DcMotor.class, "brm");
-        launch = hardwareMap.get(DcMotor.class, "launch");
-        DropIt = hardwareMap.get(Servo.class, "dropIt");
-        SendIt = hardwareMap.get(Servo.class, "sendIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
-                
+
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        DropIt.setPosition(0);
-        SendIt.setPosition(0);
                 
         frontL.setDirection(DcMotor.Direction.REVERSE);
         backL.setDirection(DcMotor.Direction.REVERSE);
         frontR.setDirection(DcMotor.Direction.FORWARD);
         backR.setDirection(DcMotor.Direction.FORWARD);
-        launch.setDirection(DcMotor.Direction.REVERSE);
         
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
 
         // Wait for the game to start (driver presses PLAY)
@@ -85,35 +75,11 @@ public class Omni extends LinearOpMode {
             double rightBackPower = (axialy + lateralx - yaw) / denominator;
                 
             lateralx = lateralx * 1.1;
-
+            
             if (gamepad1.options) {
                 imu.resetYaw();
             }
-            
-            if (gamepad2.y) {
-                launch.setPower(0);
-            }
-
-            if (gamepad2.x) {
-                launch.setPower(0.70);
-            }
-            
-            if (gamepad2.b) {
-                launch.setPower(0.60);
-            }
-            
-            if (gamepad2.dpad_up) {
-                DropIt.setPosition(0.20);
-                sleep(600);
-                DropIt.setPosition(0.00);
-            }
-
-            if (gamepad2.dpad_down) {
-                SendIt.setPosition(0.20);
-                sleep(600);
-                SendIt.setPosition(0.00);
-            }
-
+                
             // Send calculated power to wheels
             frontL.setPower(leftFrontPower);
             frontR.setPower(rightFrontPower);
