@@ -154,6 +154,7 @@ public class Omni extends LinearOpMode {
             telemetry.addData("lateral  ", "%4.2f", lateral);
             telemetry.addData("yaw  ", "%4.2f", yaw);
             telemetry.addData("launchspeed", launch.getPower());
+            telemetry.addData("launch?", gamepad1.left_bumper);
             telemetry.update();
         }
     }}
