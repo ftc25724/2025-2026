@@ -66,6 +66,8 @@ public class oneGamepad extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+        
+        int speeddiv = 1;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -74,7 +76,7 @@ public class oneGamepad extends LinearOpMode {
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial    = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral  =  gamepad1.left_stick_x;
-            double yaw      =  gamepad1.right_stick_x * 1.1;
+            double yaw      =  gamepad1.right_stick_x * 0.7;
             double lateralx = lateral * Math.cos(-botHeading) - axial * Math.sin(-botHeading);
             double axialy   = lateral * Math.sin(-botHeading) + axial * Math.cos(-botHeading);
             double denominator = Math.max(Math.abs(axialy) + Math.abs(lateralx) + Math.abs(yaw), 1);
@@ -90,39 +92,59 @@ public class oneGamepad extends LinearOpMode {
                 imu.resetYaw();
             }
             
-            if (gamepad1.y) {
-                launch.setPower(0);
-            }
-
             if (gamepad1.x) {
-                launch.setPower(0.70);
-            }
-            
-            if (gamepad1.a && gamepad1.b) {
-                launch.setPower(-0.60);
+                launch.setPower(0.73);
             }
             
             if (gamepad1.b) {
                 launch.setPower(0.60);
             }
             
-            if (gamepad1.dpad_up) {
+            if (gamepad1.y) {
+                launch.setPower(0.00);
+            }
+             
+            if (gamepad1.dpad_right) {
+                launch.setPower(0.64);
+                sleep(250);
+                SendIt.setPosition(0.20);
+                sleep(600);
+                SendIt.setPosition(0.00);
+                sleep(100);
+                launch.setPower(0.60);
+                
+            }
+                     
+            if (gamepad1.dpad_down) {
                 DropIt.setPosition(0.20);
                 sleep(600);
                 DropIt.setPosition(0.00);
             }
 
-            if (gamepad1.dpad_down) {
+            if (gamepad1.dpad_up) {
+                launch.setPower(0.77);
+                sleep(250);
                 SendIt.setPosition(0.20);
                 sleep(600);
                 SendIt.setPosition(0.00);
+                sleep(100);
+                launch.setPower(0.70);
+                
+            }
+
+            if (gamepad1.right_bumper) {
+                speeddiv = 4;
+            }
+            else {
+                speeddiv = 1;
             }
 
             // Send calculated power to wheels
-            frontL.setPower(leftFrontPower);
-            frontR.setPower(rightFrontPower);
-            backL.setPower(leftBackPower);
-            backR.setPower(rightBackPower);
+            //launch.setPower(launchspeed);
+            frontL.setPower(leftFrontPower / speeddiv);
+            frontR.setPower(rightFrontPower / speeddiv);
+            backL.setPower(leftBackPower / speeddiv);
+            backR.setPower(rightBackPower / speeddiv);
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -131,6 +153,7 @@ public class oneGamepad extends LinearOpMode {
             telemetry.addData("Axial  ", "%4.2f", axial);
             telemetry.addData("lateral  ", "%4.2f", lateral);
             telemetry.addData("yaw  ", "%4.2f", yaw);
+            telemetry.addData("launchspeed", launch.getPower());
             telemetry.update();
         }
     }}
