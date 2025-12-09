@@ -1,12 +1,13 @@
  package org.firstinspires.ftc.teamcode;
  
  import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.IMU;
+ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+ import com.qualcomm.robotcore.hardware.IMU;
  import com.qualcomm.robotcore.hardware.Servo;
  import com.qualcomm.robotcore.eventloop.opmode.Disabled;
  import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  import com.qualcomm.robotcore.hardware.DcMotor;
+ import com.qualcomm.robotcore.hardware.DcMotorEx;
  import com.qualcomm.robotcore.util.ElapsedTime;
  
  @Autonomous(name="Robot: Auto Drive By Encoder", group="Robot")
@@ -18,17 +19,11 @@ import com.qualcomm.robotcore.hardware.IMU;
     private DcMotor backL = null;
     private DcMotor frontR = null;
     private DcMotor backR = null;
-    private DcMotor launch = null;
+    private DcMotorEx launch = null;
     private Servo DropIt = null;
     private Servo SendIt = null;
     private ElapsedTime     runtime = new ElapsedTime();
  
-     // Calculate the COUNTS_PER_INCH for your specific drive train.
-     // Go to your motor vendor website to determine your motor's COUNTS_PER_MOTOR_REV
-     // For external drive gearing, set DRIVE_GEAR_REDUCTION as needed.
-     // For example, use a value of 2.0 for a 12-tooth spur gear driving a 24-tooth spur gear.
-     // This is gearing DOWN for less speed and more torque.
-     // For gearing UP, use a gear ratio less than 1.0. Note this will affect the direction of wheel rotation.
      static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
      static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
      static final double     WHEEL_DIAMETER_INCHES   = 4.09449 ;     // For figuring circumference
@@ -45,14 +40,11 @@ import com.qualcomm.robotcore.hardware.IMU;
         backL  = hardwareMap.get(DcMotor.class, "blm");
         frontR = hardwareMap.get(DcMotor.class, "frm");
         backR = hardwareMap.get(DcMotor.class, "brm");
-        launch = hardwareMap.get(DcMotor.class, "launch");
+        launch = hardwareMap.get(DcMotorEx.class, "launch");
         DropIt = hardwareMap.get(Servo.class, "dropIt");
         SendIt = hardwareMap.get(Servo.class, "sendIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
          
-         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
-         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -71,13 +63,13 @@ import com.qualcomm.robotcore.hardware.IMU;
          backL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
          frontR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
          backR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
          frontL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
          backL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
          frontR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
          backR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
-         // Send telemetry message to indicate successful Encoder reset
          //telemetry.addData("Starting at",  "%4.2f, %4.2f, %4.2f, %4.2f",
                            //frontL.getCurrentPosition(),
                            //backL.getCurrentPosition(),
@@ -87,9 +79,49 @@ import com.qualcomm.robotcore.hardware.IMU;
         //  telemetry.addData("Starting at back  left/Right", "%4.2f, %4.2f", backL.getCurrentPosition(), backR.getCurrentPosition() );
 
         telemetry.update();
+        waitForStart();
 
+        launch.setVelocity(1940);
+
+        while (launch.getVelocity() < 1940) {
+            //wait
+        }
+        
+        sleep(500);
+
+
+        DropIt.setPosition(0.20);
+        sleep(500);
+        DropIt.setPosition(0.05);
+
+        sleep(1500);
+
+        DropIt.setPosition(0.20);
+        sleep(1000);
+        DropIt.setPosition(0.05);
+
+        sleep(1000);
+
+        launch.setVelocity(2050);
+
+        while (launch.getVelocity() < 2050) {
+            //wait
+        }
+        
+        sleep(500);
+
+
+        SendIt.setPosition(0.20);
+        sleep(600);
+        SendIt.setPosition(0.00);
+        sleep(500);
+        
+        launch.setVelocity(0);
+            
+        
+
+            
          // Wait for the game to start (driver presses START)
-         waitForStart();
          // Step through each leg of the path,
          // Note: Reverse movement is obtained by setting a negative distance (not speed)
          // encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
@@ -100,23 +132,15 @@ import com.qualcomm.robotcore.hardware.IMU;
          //telemetry.update();
          sleep(1000);  // pause to display final telemetry message.
      
- 
-     /*
-      *  Method to perform a relative move, based on encoder counts.
-      *  Encoders are not reset as the move is based on the current position.
-      *  Move will stop if any of three conditions occur:
-      *  1) Move gets to the desired position
-      *  2) Move runs out of time
-      *  3) Driver stops the OpMode running.
-      */
-//     public void encoderDrive(double speed,
-//                              double leftInches, double rightInches,
-//                              double timeoutS) {
          int newLeftTarget;
          int newRightTarget;
  
          // Ensure that the OpMode is still active
          if (opModeIsActive()) {
+          
+          
+          
+          
  
              // Determine new target position, and pass to motor controller
              //newLeftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);

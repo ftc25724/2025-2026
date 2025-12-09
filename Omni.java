@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -24,7 +25,7 @@ public class Omni extends LinearOpMode {
     private DcMotor backL = null;
     private DcMotor frontR = null;
     private DcMotor backR = null;
-    private DcMotor launch = null;
+    private DcMotorEx launch = null;
     private Servo DropIt = null;
     private Servo SendIt = null;
     @Override
@@ -36,7 +37,7 @@ public class Omni extends LinearOpMode {
         backL  = hardwareMap.get(DcMotor.class, "blm");
         frontR = hardwareMap.get(DcMotor.class, "frm");
         backR = hardwareMap.get(DcMotor.class, "brm");
-        launch = hardwareMap.get(DcMotor.class, "launch");
+        launch = hardwareMap.get(DcMotorEx.class, "launch");
         DropIt = hardwareMap.get(Servo.class, "dropIt");
         SendIt = hardwareMap.get(Servo.class, "sendIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
@@ -46,7 +47,7 @@ public class Omni extends LinearOpMode {
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        DropIt.setPosition(0);
+        DropIt.setPosition(0.05);
         SendIt.setPosition(0);
                 
         frontL.setDirection(DcMotor.Direction.REVERSE);
@@ -54,6 +55,18 @@ public class Omni extends LinearOpMode {
         frontR.setDirection(DcMotor.Direction.FORWARD);
         backR.setDirection(DcMotor.Direction.FORWARD);
         launch.setDirection(DcMotor.Direction.REVERSE);
+
+        frontL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        
+        frontL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
         
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
@@ -93,42 +106,54 @@ public class Omni extends LinearOpMode {
             }
             
             if (gamepad2.x) {
-                launch.setPower(0.73);
+                launch.setVelocity(1940);
             }
             
             if (gamepad2.b) {
-                launch.setPower(0.60);
+                launch.setVelocity(1600);
             }
             
             if (gamepad2.y) {
-                launch.setPower(0.00);
+                launch.setVelocity(0);
             }
-             
-            if (gamepad2.dpad_right && gamepad1.left_bumper) {
-                launch.setPower(0.64);
-                sleep(250);
-                SendIt.setPosition(0.20);
-                sleep(600);
-                SendIt.setPosition(0.00);
-                sleep(100);
-                launch.setPower(0.60);
-                
-            }
-                     
-            if (gamepad2.dpad_down && gamepad1.left_bumper) {
+            
+            if (gamepad2.dpad_down && gamepad1.left_bumper && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
                 DropIt.setPosition(0.20);
                 sleep(600);
-                DropIt.setPosition(0.00);
+                DropIt.setPosition(0.05);
             }
-
-            if (gamepad2.dpad_up && gamepad1.left_bumper) {
-                launch.setPower(0.77);
-                sleep(250);
+            
+            if (gamepad2.dpad_down && gamepad1.left_bumper && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
+                DropIt.setPosition(0.20);
+                sleep(600);
+                DropIt.setPosition(0.05);
+            }
+            
+            if (gamepad2.dpad_up && gamepad1.left_bumper && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
+                launch.setVelocity(1620);
+                while (launch.getVelocity() <= 1620) {
+                    //wait
+                }
+                sleep(500);
                 SendIt.setPosition(0.20);
                 sleep(600);
                 SendIt.setPosition(0.00);
-                sleep(100);
-                launch.setPower(0.70);
+                sleep(500);
+                launch.setVelocity(1600);
+            }
+
+
+            if (gamepad2.dpad_up && gamepad1.left_bumper && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
+                launch.setVelocity(2020);
+                while (launch.getVelocity() <= 2020) {
+                    //wait
+                }
+                sleep(500);
+                SendIt.setPosition(0.20);
+                sleep(600);
+                SendIt.setPosition(0.00);
+                sleep(500);
+                launch.setVelocity(1940);
                 
             }
 
@@ -153,7 +178,7 @@ public class Omni extends LinearOpMode {
             telemetry.addData("Axial  ", "%4.2f", axial);
             telemetry.addData("lateral  ", "%4.2f", lateral);
             telemetry.addData("yaw  ", "%4.2f", yaw);
-            telemetry.addData("launchspeed", launch.getPower());
+            telemetry.addData("launch speed", launch.getVelocity());
             telemetry.addData("launch?", gamepad1.left_bumper);
             telemetry.update();
         }
