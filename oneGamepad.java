@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name="Robot: Omni", group="Robot")
+@TeleOp(name="Robot: oneGamepad", group="Robot")
 
-public class Omni extends LinearOpMode {
+public class oneGamepad extends LinearOpMode {
 
     // Declare OpMode members for each of the motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -28,6 +28,7 @@ public class Omni extends LinearOpMode {
     private DcMotorEx launch = null;
     private Servo DropIt = null;
     private Servo SendIt = null;
+    private Servo PushIt = null; 
     @Override
     public void runOpMode() {
 
@@ -40,6 +41,7 @@ public class Omni extends LinearOpMode {
         launch = hardwareMap.get(DcMotorEx.class, "launch");
         DropIt = hardwareMap.get(Servo.class, "dropIt");
         SendIt = hardwareMap.get(Servo.class, "sendIt");
+        PushIt = hardwareMap.get(Servo.class, "pushIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
                 
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -47,8 +49,9 @@ public class Omni extends LinearOpMode {
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        DropIt.setPosition(0.05);
-        SendIt.setPosition(0);
+        DropIt.setPosition(0.00);
+        PushIt.setPosition(0.20);
+        SendIt.setPosition(0.00);
                 
         frontL.setDirection(DcMotor.Direction.REVERSE);
         backL.setDirection(DcMotor.Direction.REVERSE);
@@ -101,36 +104,44 @@ public class Omni extends LinearOpMode {
                 
             lateralx = lateralx * 1.1;
 
-            if (gamepad1.options) {
+            if (gamepad1.options && opModeIsActive()) {
                 imu.resetYaw();
             }
             
-            if (gamepad1.x) {
+            if (gamepad1.x && opModeIsActive()) {
                 launch.setVelocity(1940);
             }
             
-            if (gamepad1.b) {
+            if (gamepad1.b && opModeIsActive()) {
                 launch.setVelocity(1600);
             }
             
-            if (gamepad1.y) {
+            if (gamepad1.y && opModeIsActive()) {
                 launch.setVelocity(0);
             }
             
-            if (gamepad1.dpad_down && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
-                DropIt.setPosition(0.20);
-                sleep(600);
-                DropIt.setPosition(0.05);
+            if (gamepad1.a && opModeIsActive()) {
+                PushIt.setPosition(0.00);
+                sleep(300);
+                PushIt.setPosition(0.20);
             }
             
-            if (gamepad1.dpad_down && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
+            if (gamepad1.dpad_down && opModeIsActive() && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
                 DropIt.setPosition(0.20);
                 sleep(600);
-                DropIt.setPosition(0.05);
+                DropIt.setPosition(0.00);
+                sleep(100);
+                }
+            
+            if (gamepad1.dpad_down && opModeIsActive() && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
+                DropIt.setPosition(0.20);
+                sleep(600);
+                DropIt.setPosition(0.00);
+                sleep(100);
             }
             
-            if (gamepad1.dpad_up && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
-                launch.setVelocity(1620);
+            if (gamepad1.dpad_up && opModeIsActive() && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
+                launch.setVelocity(1610);
                 while (launch.getVelocity() <= 1620) {
                     //wait
                 }
@@ -143,7 +154,7 @@ public class Omni extends LinearOpMode {
             }
 
 
-            if (gamepad1.dpad_up && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
+            if (gamepad1.dpad_up && opModeIsActive() && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
                 launch.setVelocity(2020);
                 while (launch.getVelocity() <= 2020) {
                     //wait
@@ -157,7 +168,7 @@ public class Omni extends LinearOpMode {
                 
             }
 
-            if (gamepad1.right_bumper) {
+            if (gamepad1.right_bumper && opModeIsActive()) {
                 speeddiv = 4;
             }
             else {
