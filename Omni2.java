@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name="Robot: Omni", group="Robot")
+@TeleOp(name="Robot: Omni2", group="Robot")
 
-public class Omni extends LinearOpMode {
+public class Omni2 extends LinearOpMode {
 
     // Declare OpMode members for each of the motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -29,11 +29,14 @@ public class Omni extends LinearOpMode {
     private Servo DropIt = null;
     private Servo SendIt = null;
     private Servo PushIt = null; 
+    
+    private ElapsedTime launchTimer = new ElapsedTime();
+    private boolean dropTriggered = false;
+    private boolean sendTriggered = false;
+
     @Override
     public void runOpMode() {
-
-        // Initialize the hardware variables. Note that the strings used here must correspond
-        // to the names assigned during the robot configuration step on the DS or RC devices.
+        // Initialize hardware components
         frontL  = hardwareMap.get(DcMotor.class, "flm");
         backL  = hardwareMap.get(DcMotor.class, "blm");
         frontR = hardwareMap.get(DcMotor.class, "frm");
@@ -43,7 +46,8 @@ public class Omni extends LinearOpMode {
         SendIt = hardwareMap.get(Servo.class, "sendIt");
         PushIt = hardwareMap.get(Servo.class, "pushIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
-                
+        
+        // Initialize motors and servos
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -69,14 +73,13 @@ public class Omni extends LinearOpMode {
         frontR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
-        
+        // Initialize IMU
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
 
-        // Wait for the game to start (driver presses PLAY)
+        // Wait for start signal
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -88,9 +91,9 @@ public class Omni extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             
+            // Getting robot orientation and joystick values
             double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);            
-            // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial    = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double axial    = -gamepad1.left_stick_y;
             double lateral  =  gamepad1.left_stick_x;
             double yaw      =  gamepad1.right_stick_x * 0.7;
             double lateralx = lateral * Math.cos(-botHeading) - axial * Math.sin(-botHeading);
@@ -108,6 +111,7 @@ public class Omni extends LinearOpMode {
                 imu.resetYaw();
             }
             
+            // Shooter logic
             if (gamepad2.x && opModeIsActive()) {
                 launch.setVelocity(1940);
             }
@@ -120,53 +124,43 @@ public class Omni extends LinearOpMode {
                 launch.setVelocity(0);
             }
             
+            // Pushit logic
             if (gamepad2.a && opModeIsActive()) {
                 PushIt.setPosition(0.00);
                 sleep(300);
                 PushIt.setPosition(0.20);
             }
-            if (gamepad2.dpad_down && gamepad1.left_bumper && opModeIsActive() && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
-                DropIt.setPosition(0.20);
-                sleep(600);
-                DropIt.setPosition(0.05);
-                sleep(100);
+            
+            // DropIt logic with timing
+            if (gamepad2.dpad_down && gamepad1.left_bumper && opModeIsActive()) {
+                if (!dropTriggered) {
+                    DropIt.setPosition(0.20);
+                    launchTimer.reset();
+                    dropTriggered = true;
+                    sleep(500);
+          //      }
+        //        if (dropTriggered && launchTimer.milliseconds() > 600) {
+                    DropIt.setPosition(0.05);
+                    dropTriggered = false;
+                }
             }
             
-            if (gamepad2.dpad_down && gamepad1.left_bumper && opModeIsActive() && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
-                DropIt.setPosition(0.20);
-                sleep(600);
-                DropIt.setPosition(0.05);
-                sleep(100);
-            }
-            
-            if (gamepad2.dpad_up && gamepad1.left_bumper && opModeIsActive() && launch.getVelocity() >= 1600 && launch.getVelocity() < 1620) {
-                launch.setVelocity(1610);
-                ElapsedTime timer = new ElapsedTime();
-                while (launch.getVelocity() <= 1620 && opModeIsActive() && timer.milliseconds() < 300) {
-                    idle();
+            // SendIt logic with timing
+            if (gamepad2.dpad_up && gamepad1.left_bumper && opModeIsActive()) {
+                if (!sendTriggered) {
+                    SendIt.setPosition(0.20);
+                    launchTimer.reset();
+                    sendTriggered = true;
+                    sleep(500);
+
+            //    }
+              //  if (sendTriggered && launchTimer.milliseconds() > 600) {
+                    SendIt.setPosition(0.00);
+                    sendTriggered = false;
                 }
-                SendIt.setPosition(0.20);
-                sleep(600);
-                SendIt.setPosition(0.00);
-                sleep(500);
-                launch.setVelocity(1600);
             }
 
-
-            if (gamepad2.dpad_up && gamepad1.left_bumper && opModeIsActive() && launch.getVelocity() >= 1920 && launch.getVelocity() < 1940) {
-                launch.setVelocity(2020);
-                ElapsedTime timer = new ElapsedTime();
-                while (launch.getVelocity() <= 2020 && opModeIsActive() && timer.milliseconds() < 300) {
-                    idle();
-                }
-                SendIt.setPosition(0.20);
-                sleep(600);
-                SendIt.setPosition(0.00);
-                sleep(500);
-                launch.setVelocity(1940);
-                
-            }
-
+            // Speed divider
             if (gamepad1.right_bumper && opModeIsActive()) {
                 speeddiv = 4;
             }
@@ -175,21 +169,20 @@ public class Omni extends LinearOpMode {
             }
 
             // Send calculated power to wheels
-            //launch.setPower(launchspeed);
             frontL.setPower(leftFrontPower / speeddiv);
             frontR.setPower(rightFrontPower / speeddiv);
             backL.setPower(leftBackPower / speeddiv);
             backR.setPower(rightBackPower / speeddiv);
             
-            // Show the elapsed game time and wheel power.
+            // Telemetry update
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.addData("Axial  ", "%4.2f", axial);
-            telemetry.addData("lateral  ", "%4.2f", lateral);
-            telemetry.addData("yaw  ", "%4.2f", yaw);
-            telemetry.addData("launch speed", launch.getVelocity());
-            telemetry.addData("launch?", gamepad1.left_bumper);
+            telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+            telemetry.addData("Axial", "%4.2f", axial);
+            telemetry.addData("Lateral", "%4.2f", lateral);
+            telemetry.addData("Yaw", "%4.2f", yaw);
+            telemetry.addData("Launch speed", launch.getVelocity());
             telemetry.update();
         }
-    }}
+    }
+}

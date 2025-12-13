@@ -22,6 +22,7 @@
     private DcMotorEx launch = null;
     private Servo DropIt = null;
     private Servo SendIt = null;
+    private Servo PushIt = null; 
     private ElapsedTime     runtime = new ElapsedTime();
  
      static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
@@ -43,6 +44,7 @@
         launch = hardwareMap.get(DcMotorEx.class, "launch");
         DropIt = hardwareMap.get(Servo.class, "dropIt");
         SendIt = hardwareMap.get(Servo.class, "sendIt");
+        PushIt = hardwareMap.get(Servo.class, "pushIt");
         IMU imu = hardwareMap.get(IMU.class, "imu");
          
         frontL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -93,9 +95,15 @@
         DropIt.setPosition(0.20);
         sleep(500);
         DropIt.setPosition(0.05);
+        
+        sleep(150);
 
-        sleep(1500);
-
+        PushIt.setPosition(0.00);
+        sleep(300);
+        PushIt.setPosition(0.20);
+        
+        sleep(150);
+        
         DropIt.setPosition(0.20);
         sleep(1000);
         DropIt.setPosition(0.05);
